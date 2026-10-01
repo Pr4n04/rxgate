@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+dist/
+build/
+
+# secrets — never commit
+.env
+.env.local
+
+# databases — regenerate on startup via backend/db/schema.js initDatabase()
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# runtime uploads (prescription images contain personal data)
+# NOTE: must be **/uploads/* — a bare uploads/* only matches at repo root,
+# which is why these files were previously committed by accident.
+**/uploads/*
+!**/uploads/.gitkeep
+
+# editors / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.log

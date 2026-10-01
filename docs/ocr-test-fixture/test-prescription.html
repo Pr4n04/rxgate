@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Test Prescription for OCR</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', 'Courier New', monospace;
+    background: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px;
+  }
+  .prescription {
+    width: 800px;
+    background: white;
+    padding: 40px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #822746;
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+  }
+  .header h1 {
+    font-size: 22px;
+    color: #822746;
+    font-weight: 700;
+  }
+  .header .clinic-info {
+    text-align: right;
+    font-size: 13px;
+    color: #555;
+  }
+  .rx-number {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 16px;
+  }
+  .section {
+    margin-bottom: 20px;
+  }
+  .section-title {
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #822746;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 4px;
+  }
+  .row {
+    display: flex;
+    margin-bottom: 4px;
+  }
+  .label {
+    width: 140px;
+    font-weight: 600;
+    color: #444;
+    font-size: 13px;
+  }
+  .value {
+    flex: 1;
+    color: #222;
+    font-size: 13px;
+  }
+  .drug-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #822746;
+    margin: 8px 0;
+  }
+  .dosage-box {
+    background: #f9f6f7;
+    border-left: 4px solid #822746;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+  }
+  .footer {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 2px solid #822746;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #666;
+  }
+  .sig-line {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .sig-line div {
+    width: 200px;
+    border-top: 1px solid #333;
+    padding-top: 4px;
+    font-size: 12px;
+    color: #555;
+    text-align: center;
+  }
+  .controlled-stamp {
+    display: inline-block;
+    background: #822746;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 8px;
+  }
+  .notify {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="prescription">
+  <!-- SYNTHETIC TEST DATA. Every name, address, phone number and
+       registration number here is invented for OCR testing. -->
+  <div class="header">
+    <div>
+      <h1>RxGate Sample Veterinary Practice</h1>
+      <p style="font-size:13px;color:#555;">1 Sample Street, Sample Town, BT0 0AA</p>
+      <p style="font-size:13px;color:#555;">Tel: 000 0000 0000</p>
+    </div>
+    <div class="clinic-info">
+      <p><strong>Vet:</strong> Dr. A. Tester</p>
+      <p><strong>Reg:</strong> TEST-0001</p>
+      <p><strong>Date:</strong> 15 May 2026</p>
+    </div>
+  </div>
+
+  <div class="rx-number">
+    Prescription Ref: RX-TEST-0001
+  </div>
+
+  <!-- Patient -->
+  <div class="section">
+    <div class="section-title">Patient Information</div>
+    <div class="row">
+      <span class="label">Owner:</span>
+      <span class="value">A. Client</span>
+    </div>
+    <div class="row">
+      <span class="label">Pet Name:</span>
+      <span class="value">Rex</span>
+    </div>
+    <div class="row">
+      <span class="label">Species/Breed:</span>
+      <span class="value">Dog / Golden Retriever</span>
+    </div>
+    <div class="row">
+      <span class="label">Age/Weight:</span>
+      <span class="value">4 years / 32 kg</span>
+    </div>
+  </div>
+
+  <!-- Medication 1 -->
+  <div class="section">
+    <div class="section-title">Prescribed Medication</div>
+    <div class="drug-name">Apoquel<span style="font-weight:400;font-size:14px;color:#666;margin-left:8px;">(Oclacitinib)</span></div>
+    <div class="row"><span class="label">Strength:</span><span class="value">16 mg tablets</span></div>
+    <div class="row"><span class="label">Quantity:</span><span class="value">28 tablets</span></div>
+    <div class="row"><span class="label">Dosage:</span><span class="value">1 tablet twice daily for 14 days</span></div>
+    <div class="row"><span class="label">Directions:</span><span class="value">Give with food. For canine allergic dermatitis.</span></div>
+    <div class="dosage-box">
+      SIG: 1 TABLET PO BID × 14 DAYS<br>
+      APOQUEL 16 MG
+    </div>
+  </div>
+
+  <!-- Medication 2 -->
+  <div class="section">
+    <div class="section-title">Additional Medication</div>
+    <div class="drug-name">NexGard Spectra<span style="font-weight:400;font-size:14px;color:#666;margin-left:8px;">(Afoxolaner + Milbemycin oxime)</span></div>
+    <div class="row"><span class="label">Strength:</span><span class="value">11.3 mg / 56.5 mg chew</span></div>
+    <div class="row"><span class="label">Quantity:</span><span class="value">1 chew</span></div>
+    <div class="row"><span class="label">Dosage:</span><span class="value">1 chew once monthly</span></div>
+    <div class="row"><span class="label">Directions:</span><span class="value">For flea and worm prevention. Next dose due 15 June 2026.</span></div>
+  </div>
+
+  <!-- Controlled Drug Notice -->
+  <div class="notify">
+    <strong>⚠️ Controlled Drug Notice:</strong> Apoquel is not a controlled substance. 
+    Prescription valid for 28 days from date of issue. Repeat dispensing not authorised.
+  </div>
+
+  <!-- Sig -->
+  <div class="sig-line">
+    <div>Prescriber Signature</div>
+    <div>Date</div>
+  </div>
+
+  <div style="margin-top:8px;font-size:11px;color:#999;text-align:center;">
+    Dr. A. Tester MVB MRCVS • NI Veterinary Registration: TEST-0001
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span>RxGate Sample Veterinary Practice</span>
+    <span>Dispensing in accordance with Veterinary Medicines Regulations 2013</span>
+    <span>Page 1 of 1</span>
+  </div>
+</div>
+</body>
+</html>
