@@ -2,13 +2,9 @@ const multer = require('multer');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
-// Map an allowed MIME type to a fixed extension.
-// The extension used to come from `path.extname(file.originalname)`, which is
-// attacker-controlled, while the type check only looks at the client-declared
-// `Content-Type` of the multipart part — which is equally attacker-controlled.
-// Uploads are served straight off disk by express.static, so a file stored as
-// `.html` is returned as `text/html` from the app's own origin: stored XSS.
-// Deriving the extension from the allowlist removes that.
+// Pick the extension from the allowed file type rather than the name the browser
+// sent. The name can be anything, so someone could upload a file called x.html
+// and it would get saved as a .html and run as a page on this site.
 const EXTENSION_BY_MIME = {
   'image/jpeg': '.jpg',
   'image/jpg': '.jpg',

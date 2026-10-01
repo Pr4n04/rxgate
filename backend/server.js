@@ -135,7 +135,7 @@ app.get('*', (req, res, next) => {
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
 
-  // Don't leak error details in production
+  // Don't send the real error message back
   const isDev = process.env.NODE_ENV !== 'production';
 
   if (err.name === 'MulterError') {

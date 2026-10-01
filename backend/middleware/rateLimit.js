@@ -14,9 +14,9 @@ function handler(req, res) {
   });
 }
 
-// Credential endpoints: strict, because every request represents a password
-// guess. Keyed by IP plus submitted email so one attacker cannot lock out an
-// entire shared/NAT network, and cannot reset the budget by rotating emails.
+// Login/signup get a low limit since every request is a password guess. Uses the
+// email in the key as well as the IP so people on the same wifi don't block each
+// other out by using up the whole limit.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
