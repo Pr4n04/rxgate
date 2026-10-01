@@ -14,9 +14,13 @@ async function seed() {
     return;
   }
 
-  const adminHash = await bcrypt.hash('admin123', 10);
-  const vetHash = await bcrypt.hash('vet123', 10);
-  const customerHash = await bcrypt.hash('customer123', 10);
+  // Cost factor 12, matching backend/routes/auth.js. Seeded accounts were
+  // previously hashed at 10, so a database seeded by this script accepted
+  // weaker hashes than the same password created through registration.
+  const BCRYPT_COST = 12;
+  const adminHash = await bcrypt.hash('admin123', BCRYPT_COST);
+  const vetHash = await bcrypt.hash('vet123', BCRYPT_COST);
+  const customerHash = await bcrypt.hash('customer123', BCRYPT_COST);
 
   // Create admin user
   db.prepare(`INSERT INTO users (id, email, password_hash, name, role, gdpr_consent, gdpr_consent_date) VALUES (?, ?, ?, ?, ?, ?, ?)`).run(
