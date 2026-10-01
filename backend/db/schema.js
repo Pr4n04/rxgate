@@ -101,6 +101,7 @@ function initDatabase() {
       customer_email TEXT NOT NULL,
       drug_id TEXT,
       drug_name TEXT,
+      quantity INTEGER NOT NULL DEFAULT 1,
       amount INTEGER NOT NULL,
       currency TEXT DEFAULT 'gbp',
       stripe_payment_intent_id TEXT,
@@ -187,6 +188,7 @@ function initDatabase() {
     `ALTER TABLE prescriptions ADD COLUMN retention_expiry DATETIME`,
     `ALTER TABLE prescriptions ADD COLUMN cart_items TEXT DEFAULT '[]'`,
     `ALTER TABLE activity_log ADD COLUMN ip_address TEXT`,
+    `ALTER TABLE orders ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1`,
   ];
 
   for (const migration of migrations) {

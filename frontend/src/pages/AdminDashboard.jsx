@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
@@ -605,9 +605,34 @@ export default function AdminDashboard() {
 
 // ===== APPROVE MODAL COMPONENT =====
 function ApproveModal({ prescription, drugs, onApprove, onCancel, approving, onLoadDrugs }) {
+  // Server-authoritative cart total. The backend re-prices from the drugs table
+  // and returns this as pricing.cartTotal, so the pharmacist compares a real
+  // figure against the amount they are about to charge instead of trusting the
+  // unit price of whichever single drug happens to be selected.
+  const cartTotal = useMemo(() => {
+    if (!prescription.cart_items) return 0;
+    try {
+      return JSON.parse(prescription.cart_items)
+        .map(i => {
+          const drug = drugs.find(d => d.id === i.drugId);
+          if (!drug) return null;
+          return drug.price * Math.max(1, parseInt(i.quantity, 10) || 1);
+        })
+        .filter(v => v !== null)
+        .reduce((a, b) => a + b, 0);
+    } catch {
+      return 0;
+    }
+  }, [prescription.cart_items, drugs]);
+
+  // Default to what the cart actually comes to. Previously this defaulted to the
+  // unit price of one drug, so a multi-item or multi-quantity prescription was
+  // approved at a fraction of the real total.
+  const defaultAmount = cartTotal > 0 ? cartTotal : (prescription.price || 0);
+
   const [drugId, setDrugId] = useState(prescription.drug_id || '');
   const [drugName, setDrugName] = useState(prescription.drug_name || '');
-  const [amount, setAmount] = useState(prescription.price ? (prescription.price / 100).toFixed(2) : '');
+  const [amount, setAmount] = useState(defaultAmount ? (defaultAmount / 100).toFixed(2) : '');
   const [adminNotes, setAdminNotes] = useState('');
   const [cdValidated, setCdValidated] = useState(false);
   const [cdInfo, setCdInfo] = useState(null);
@@ -616,8 +641,10 @@ function ApproveModal({ prescription, drugs, onApprove, onCancel, approving, onL
     if (drugId) {
       const drug = drugs.find(d => d.id === drugId);
       if (drug) {
-        setDrugName(drug.name);
-        setAmount((drug.price / 100).toFixed(2));
+      setDrugName(drug.name);
+      // Prefer the cart total; only fall back to the unit price for a
+      // prescription with no cart attached.
+      setAmount(((cartTotal > 0 ? cartTotal : drug.price) / 100).toFixed(2));
         if (drug.controlled_drug_schedule) {
           setCdInfo({
             schedule: drug.controlled_drug_schedule,
@@ -628,7 +655,7 @@ function ApproveModal({ prescription, drugs, onApprove, onCancel, approving, onL
         }
       }
     }
-  }, [drugId]);
+  }, [drugId, cartTotal]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -756,6 +783,12 @@ function ApproveModal({ prescription, drugs, onApprove, onCancel, approving, onL
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Amount (£) *</label>
               <input type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} className="input-field text-sm" required />
+              {cartTotal > 0 && (
+                <p className={`text-xs mt-1 ${Number(amount) === cartTotal / 100 ? 'text-gray-500' : 'text-amber-700 font-medium'}`}>
+                  Cart total £{(cartTotal / 100).toFixed(2)}
+                  {Number(amount) !== cartTotal / 100 && ' — you are charging a different amount'}
+                </p>
+              )}
             </div>
           </div>
 

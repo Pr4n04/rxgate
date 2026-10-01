@@ -187,23 +187,62 @@ router.put('/prescriptions/:id/approve', async (req, res) => {
       return res.status(400).json({ error: `Prescription is already ${prescription.status}. Cannot approve.` });
     }
 
-    // Determine the drug and price
+    // Determine the drug and price.
+    //
+    // The cart attached to the prescription is the source of truth for what the
+    // customer actually asked for. This used to fall back to the *unit* price of
+    // a single drug, so a 3-item cart was billed for one item and the dispensed
+    // quantity was never recorded anywhere.
+    //
+    // Prices are always re-read from the drugs table rather than trusting a
+    // client-supplied number. The pharmacist may still override the total (e.g.
+    // partial dispensing), but the divergence is returned so the UI can show it
+    // rather than silently charging a hand-typed number.
     let finalDrugId = drugId || prescription.drug_id;
     let finalDrugName = drugName || prescription.drug_name;
-    let finalAmount = amount;
 
-    if (!finalAmount) {
-      if (finalDrugId) {
-        const drug = db.prepare('SELECT price FROM drugs WHERE id = ?').get(finalDrugId);
-        if (drug) {
-          finalAmount = drug.price;
-        }
-      }
+    let cartItems = [];
+    try {
+      cartItems = JSON.parse(prescription.cart_items || '[]');
+    } catch {
+      cartItems = [];
     }
 
-    if (!finalAmount) {
+    const pricedCart = cartItems
+      .map((item) => {
+        const drug = db.prepare('SELECT id, name, price FROM drugs WHERE id = ?').get(item.drugId);
+        if (!drug) return null;
+        const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
+        return {
+          drugId: drug.id,
+          name: drug.name,
+          unitPrice: drug.price,
+          quantity: qty,
+          lineTotal: drug.price * qty,
+        };
+      })
+      .filter(Boolean);
+
+    const expectedAmount = pricedCart.reduce((sum, line) => sum + line.lineTotal, 0);
+
+    // Quantity being dispensed: the cart quantity for the drug being approved.
+    const approvedLine = pricedCart.find((line) => line.drugId === finalDrugId);
+    const finalQuantity = approvedLine ? approvedLine.quantity : 1;
+
+    const submittedAmount = parseInt(amount, 10);
+    let finalAmount;
+    if (Number.isFinite(submittedAmount) && submittedAmount > 0) {
+      finalAmount = submittedAmount;              // explicit pharmacist override
+    } else if (expectedAmount > 0) {
+      finalAmount = expectedAmount;               // server-derived cart total
+    } else if (finalDrugId) {
+      const drug = db.prepare('SELECT price FROM drugs WHERE id = ?').get(finalDrugId);
+      finalAmount = drug ? drug.price : 0;        // single-drug prescription
+    }
+
+    if (!Number.isFinite(finalAmount) || finalAmount <= 0) {
       db.close();
-      return res.status(400).json({ error: 'Please provide an amount or link a drug for this prescription.' });
+      return res.status(400).json({ error: 'Please provide a positive amount or link a drug for this prescription.' });
     }
 
     // Check if this is a controlled drug and require CD validation
@@ -263,9 +302,9 @@ router.put('/prescriptions/:id/approve', async (req, res) => {
     // Create order record
     const orderId = uuidv4();
     db.prepare(`
-      INSERT INTO orders (id, prescription_id, customer_email, drug_id, drug_name, amount, status)
-      VALUES (?, ?, ?, ?, ?, ?, 'pending')
-    `).run(orderId, req.params.id, prescription.customer_email, finalDrugId, finalDrugName, parseInt(finalAmount));
+      INSERT INTO orders (id, prescription_id, customer_id, customer_email, drug_id, drug_name, quantity, amount, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+    `).run(orderId, req.params.id, prescription.customer_id, prescription.customer_email, finalDrugId, finalDrugName, finalQuantity, parseInt(finalAmount));
 
     // Generate payment link
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -334,6 +373,15 @@ router.put('/prescriptions/:id/approve', async (req, res) => {
       message: 'Prescription approved. Payment link sent to customer.',
       prescription: { id: req.params.id, status: 'approved', paymentLink: paymentUrl, isControlledDrug: isCd === 1 },
       cdValidation: cdValidationResult,
+      // Surfaced so the approval modal can show what the cart actually came to
+      // next to what is being charged, instead of trusting a typed-in figure.
+      pricing: {
+        cartTotal: expectedAmount,
+        chargedAmount: parseInt(finalAmount),
+        quantity: finalQuantity,
+        amountWasOverridden: expectedAmount > 0 && parseInt(finalAmount) !== expectedAmount,
+        lines: pricedCart,
+      },
     });
   } catch (error) {
     console.error('Error approving prescription:', error);

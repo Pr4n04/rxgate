@@ -150,6 +150,20 @@ router.post('/prescriptions', upload.single('prescriptionImage'), async (req, re
     let isCd = 0;
     let cdSchedule = null;
 
+    // Reject unknown drug ids up front. Previously an unrecognised id reached
+    // the INSERT and surfaced as a raw SQLITE_CONSTRAINT_FOREIGNKEY, i.e. a 500
+    // with a misleading "Failed to upload prescription" message for what is
+    // simply bad client input.
+    const referencedDrugIds = parsedCartItems.map((i) => i.drugId).filter(Boolean);
+    if (resolvedDrugId) referencedDrugIds.push(resolvedDrugId);
+    for (const referencedId of new Set(referencedDrugIds)) {
+      const exists = db.prepare('SELECT 1 FROM drugs WHERE id = ?').get(referencedId);
+      if (!exists) {
+        db.close();
+        return res.status(400).json({ error: `Unknown drug id "${referencedId}". Reload the drug list and try again.` });
+      }
+    }
+
     if (parsedCartItems.length > 0) {
       // Use the first cart item as the primary drug, check all for CD status
       const firstItem = parsedCartItems[0];
