@@ -187,17 +187,9 @@ router.put('/prescriptions/:id/approve', async (req, res) => {
       return res.status(400).json({ error: `Prescription is already ${prescription.status}. Cannot approve.` });
     }
 
-    // Determine the drug and price.
-    //
-    // The cart attached to the prescription is the source of truth for what the
-    // customer actually asked for. This used to fall back to the *unit* price of
-    // a single drug, so a 3-item cart was billed for one item and the dispensed
-    // quantity was never recorded anywhere.
-    //
-    // Prices are always re-read from the drugs table rather than trusting a
-    // client-supplied number. The pharmacist may still override the total (e.g.
-    // partial dispensing), but the divergence is returned so the UI can show it
-    // rather than silently charging a hand-typed number.
+    // Work out the total from the cart. This used to just use the price of one
+    // drug, so a cart with 3 of something got charged for 1. The pharmacist can
+    // still type a different amount if they only want to part fill the order.
     let finalDrugId = drugId || prescription.drug_id;
     let finalDrugName = drugName || prescription.drug_name;
 
@@ -333,11 +325,9 @@ router.put('/prescriptions/:id/approve', async (req, res) => {
         paymentUrl, 'payment_sent', req.params.id
       );
     } catch (stripeError) {
-      // Payment gateway unavailable (missing keys, outage). Keep the approval and
-      // the order so staff can retry rather than losing the review work, and send
-      // the customer to the existing payment page — which re-reads the prescription
-      // and can mint a session later. Pointing this at a route that does not exist
-      // would have emailed the customer a dead link.
+      // Stripe is down or not set up. Keep the approval and the order so it can
+      // be retried, and send them to the normal payment page rather than a link
+      // that goes nowhere.
       console.error('Stripe session creation failed:', stripeError.message);
       paymentUrl = `${frontendUrl}/payment/${req.params.id}`;
       db.prepare('UPDATE prescriptions SET payment_link = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(
@@ -429,24 +419,19 @@ router.put('/prescriptions/:id/reject', async (req, res) => {
   }
 });
 
-/**
- * Allowed prescription status transitions.
- *
- * The workflow is pending -> approved -> payment_sent -> paid -> fulfilled, with
- * rejected as a terminal exit. `fulfill` previously ran a bare UPDATE with no
- * status check, so any pending prescription could be jumped straight to
- * fulfilled — skipping clinical review and payment entirely — and an unknown ID
- * still answered 200 because a zero-row UPDATE is not an error.
- */
+// Allowed prescription status transitions.
+// The workflow is pending -> approved -> payment_sent -> paid -> fulfilled, with
+// rejected as a terminal exit. `fulfill` previously ran a bare UPDATE with no
+// status check, so any pending prescription could be jumped straight to
+// fulfilled — skipping clinical review and payment entirely — and an unknown ID
+// still answered 200 because a zero-row UPDATE is not an error.
 const ALLOWED_TRANSITIONS = {
   'mark-paid': ['approved', 'payment_sent'],
   fulfill: ['paid'],
 };
 
-/**
- * Load a prescription and confirm it may legally move to `target`.
- * Returns the prescription on success, or writes the error response and returns null.
- */
+// Load a prescription and confirm it may legally move to `target`.
+// Returns the prescription on success, or writes the error response and returns null.
 function loadForTransition(db, res, id, target) {
   const prescription = db.prepare('SELECT id, status FROM prescriptions WHERE id = ?').get(id);
 

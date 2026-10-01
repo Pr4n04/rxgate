@@ -1,23 +1,18 @@
 #!/usr/bin/env node
-/**
- * RxGate API smoke test.
- *
- * Exercises the security-critical paths against a running backend on :3001.
- * Uses only the seeded local development accounts — no real credentials, no
- * network calls to Stripe, and no real patient data.
- *
- *   node scripts/smoke-test.js            # assumes server already running
- *
- * Covers the regressions that were previously live in the codebase:
- *   - unauthenticated PII read of a prescription        (was: no auth at all)
- *   - unauthenticated Stripe checkout session minting   (was: no auth at all)
- *   - JWT secret falling back to a literal in the repo (was: hardcoded default)
- *   - logout not actually revoking the token           (was: never read `revoked`)
- *   - invalid/expired token answering 403 and wedging the client (was: 403)
- *   - GDPR export redacting the subject's own email    (was: column not selected)
- *   - valid Schedule 2 blocked when supply was omitted (was: hardcoded 30 days)
- *   - controlled-drug schedule missing from GET /api/drugs
- */
+// RxGate API smoke test.
+// Exercises the security-critical paths against a running backend on :3001.
+// Uses only the seeded local development accounts — no real credentials, no
+// network calls to Stripe, and no real patient data.
+// node scripts/smoke-test.js            # assumes server already running
+// Covers the regressions that were previously live in the codebase:
+// - unauthenticated PII read of a prescription        (was: no auth at all)
+// - unauthenticated Stripe checkout session minting   (was: no auth at all)
+// - JWT secret falling back to a literal in the repo (was: hardcoded default)
+// - logout not actually revoking the token           (was: never read `revoked`)
+// - invalid/expired token answering 403 and wedging the client (was: 403)
+// - GDPR export redacting the subject's own email    (was: column not selected)
+// - valid Schedule 2 blocked when supply was omitted (was: hardcoded 30 days)
+// - controlled-drug schedule missing from GET /api/drugs
 
 const path = require('path');
 const crypto = require('crypto');
@@ -98,7 +93,7 @@ mkPrescription(pendingRx, customer.email, 'pending');
 mkPrescription(approvedRx, customer.email, 'approved');
 mkPrescription(noSessionRx, customer.email, 'approved');
 
-// an order exists but has no Stripe session yet -> the mint path
+// order exists but has no Stripe session yet, so the customer can make one
 db.prepare(`
   INSERT INTO orders (id, prescription_id, customer_id, customer_email, drug_id, drug_name, amount, status)
   VALUES (?, ?, ?, ?, ?, 'Test Drug', 1250, 'pending')

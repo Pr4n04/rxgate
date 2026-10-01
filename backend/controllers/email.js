@@ -34,16 +34,14 @@ function getTransporter() {
   return transporter;
 }
 
-/**
- * Send payment link email to customer
- * @param {object} params
- * @param {string} params.to - Customer email
- * @param {string} params.customerName - Customer name
- * @param {string} params.drugName - Name of prescribed drug
- * @param {string} params.amount - Amount in pounds (e.g., "45.00")
- * @param {string} params.paymentLink - Full payment URL
- * @param {string} params.prescriptionId - Prescription ID
- */
+// Send payment link email to customer
+// @param {object} params
+// @param {string} params.to - Customer email
+// @param {string} params.customerName - Customer name
+// @param {string} params.drugName - Name of prescribed drug
+// @param {string} params.amount - Amount in pounds (e.g., "45.00")
+// @param {string} params.paymentLink - Full payment URL
+// @param {string} params.prescriptionId - Prescription ID
 async function sendPaymentLinkEmail({ to, customerName, drugName, amount, paymentLink, prescriptionId }) {
   const transporter = getTransporter();
 
@@ -114,9 +112,7 @@ async function sendPaymentLinkEmail({ to, customerName, drugName, amount, paymen
   return info;
 }
 
-/**
- * Send prescription status update email
- */
+// Send prescription status update email
 async function sendStatusUpdateEmail({ to, customerName, prescriptionId, status, adminNotes }) {
   const transporter = getTransporter();
   const statusLabels = { approved: 'Approved', rejected: 'Not Approved', paid: 'Paid', fulfilled: 'Fulfilled' };

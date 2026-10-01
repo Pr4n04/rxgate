@@ -7,13 +7,10 @@ const { sendStatusUpdateEmail } = require('../controllers/email');
 
 const router = express.Router();
 
-// POST /api/orders/create - Return the payment link for an approved prescription.
-//
-// The Stripe session is normally created at approval time (admin.js) and emailed to
-// the customer, so this endpoint is only a recovery path for the /payment/:id page.
-// Regenerating a session creates a real Stripe object and reveals whether a given
-// prescription ID is approved, so an anonymous caller is allowed to re-read an
-// existing link but never to mint a new one.
+// POST /api/orders/create - sends back the payment link for an approved prescription.
+// Usually done when the admin approves it, this is a backup in case the email
+// didn't arrive. Logged in users can make a new session, anyone else just gets
+// the link that already exists.
 router.post('/create', authenticateToken.optional, async (req, res) => {
   let db;
   try {
@@ -134,12 +131,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   res.json({ received: true });
 });
 
-// POST /api/orders/mock-complete — development-only stand-in for the Stripe webhook.
-//
-// Exists solely so the mock checkout page can exercise the paid -> fulfilled flow
-// when no Stripe keys are configured. It refuses to exist the moment a real
-// STRIPE_SECRET_KEY is present, so there is no simulation path in production;
-// real deployments advance state via the signed webhook below.
+// POST /api/orders/mock-complete - stands in for Stripe so the paid -> fulfilled
+// flow can be tested without a real account. Returns 404 if a key is set in .env.
 router.post('/mock-complete', authenticateToken, async (req, res) => {
   if (process.env.STRIPE_SECRET_KEY) {
     return res.status(404).json({ error: 'Not found.' });
@@ -202,10 +195,8 @@ router.get('/my', authenticateToken, (req, res) => {
   }
 });
 
-// GET /api/orders/session/:sessionId - Verify payment session
-// Authenticated and scoped to the caller's own order: a Stripe session id in a
-// browser URL is discoverable, so returning its status to anyone who presents it
-// leaks payment activity belonging to other customers.
+// GET /api/orders/session/:sessionId - Check a payment went through.
+// Only works for your own order since the session id shows up in the URL.
 router.get('/session/:sessionId', authenticateToken, async (req, res) => {
   let db;
   try {

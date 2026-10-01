@@ -605,10 +605,8 @@ export default function AdminDashboard() {
 
 // ===== APPROVE MODAL COMPONENT =====
 function ApproveModal({ prescription, drugs, onApprove, onCancel, approving, onLoadDrugs }) {
-  // Server-authoritative cart total. The backend re-prices from the drugs table
-  // and returns this as pricing.cartTotal, so the pharmacist compares a real
-  // figure against the amount they are about to charge instead of trusting the
-  // unit price of whichever single drug happens to be selected.
+  // Total the cart comes to, worked out from the drugs list. The backend does
+  // the same thing and sends it back as pricing.cartTotal.
   const cartTotal = useMemo(() => {
     if (!prescription.cart_items) return 0;
     try {

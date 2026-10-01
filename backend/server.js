@@ -38,7 +38,7 @@ app.use(helmet({
       frameSrc: ["https://js.stripe.com", "https://hooks.stripe.com"],
     },
   },
-  // GDPR: don't leak referrer info
+  // GDPR: don't send the URL of other pages in the referrer
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   // Don't send X-Powered-By
   hidePoweredBy: true,
@@ -62,10 +62,8 @@ app.use('/api/orders/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
-// Serve uploaded files.
-// `nosniff` plus an explicit download disposition: these are user-supplied files,
-// and without this a browser may execute a stored file as active content on the
-// app's own origin.
+// Serve uploaded files. Users can upload anything, so we set nosniff otherwise
+// the browser may try to run an uploaded file as code.
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   setHeaders: (res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');

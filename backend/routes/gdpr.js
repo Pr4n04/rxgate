@@ -8,10 +8,8 @@ const router = express.Router();
 // All GDPR routes require authentication
 router.use(authenticateToken);
 
-/**
- * POST /api/gdpr/consent - Update GDPR consent preferences
- * Body: { gdprConsent: boolean, marketingConsent: boolean }
- */
+// POST /api/gdpr/consent - Update GDPR consent preferences
+// Body: { gdprConsent: boolean, marketingConsent: boolean }
 router.post('/consent', (req, res) => {
   try {
     const { gdprConsent, marketingConsent } = req.body;
@@ -44,10 +42,8 @@ router.post('/consent', (req, res) => {
   }
 });
 
-/**
- * GET /api/gdpr/data - Export all personal data (Subject Access Request)
- * Returns a JSON payload with all data held about the user
- */
+// GET /api/gdpr/data - Export all personal data (Subject Access Request)
+// Returns a JSON payload with all data held about the user
 router.get('/data', (req, res) => {
   try {
     const db = getDb();
@@ -125,10 +121,8 @@ router.get('/data', (req, res) => {
   }
 });
 
-/**
- * POST /api/gdpr/request-deletion - Request account deletion (Right to be Forgotten)
- * Body: { confirmation: string (must equal 'DELETE') }
- */
+// POST /api/gdpr/request-deletion - Request account deletion (Right to be Forgotten)
+// Body: { confirmation: string (must equal 'DELETE') }
 router.post('/request-deletion', (req, res) => {
   try {
     const { confirmation } = req.body;
@@ -172,9 +166,7 @@ router.post('/request-deletion', (req, res) => {
   }
 });
 
-/**
- * GET /api/gdpr/consent-status - Get current consent preferences
- */
+// GET /api/gdpr/consent-status - Get current consent preferences
 router.get('/consent-status', (req, res) => {
   try {
     const db = getDb();

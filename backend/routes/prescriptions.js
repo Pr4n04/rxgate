@@ -4,32 +4,26 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-/**
- * GET /api/prescriptions/:id
- *
- * Used by two very different callers:
- *   1. Staff (admin/vet) and the owning customer inside the app, who are logged in.
- *   2. The recipient of an emailed payment link, who is NOT logged in and may never log in.
- *
- * A prescription is special-category health data under UK GDPR Art.9, so the
- * unauthenticated path returns a redacted projection rather than the patient name
- * and dosage. It is also limited to prescriptions that have already been approved,
- * so a freshly uploaded (still `pending`) record cannot be probed by guessing IDs.
- */
+// GET /api/prescriptions/:id
+// Used by two very different callers:
+// 1. Staff (admin/vet) and the owning customer inside the app, who are logged in.
+// 2. The recipient of an emailed payment link, who is NOT logged in and may never log in.
+// A prescription is special-category health data under UK GDPR Art.9, so the
+// unauthenticated path returns a redacted projection rather than the patient name
+// and dosage. It is also limited to prescriptions that have already been approved,
+// so a freshly uploaded (still `pending`) record cannot be probed by guessing IDs.
 
 // Fields safe to return to an unauthenticated holder of a payment link.
 const REDACTED_FIELDS = ['id', 'drug_name', 'status', 'payment_link', 'created_at'];
 
-/** Full projection for staff and the owning customer. */
+// Full projection for staff and the owning customer.
 const FULL_FIELDS = [
   'id', 'customer_name', 'customer_email', 'drug_name', 'dosage_instructions',
   'status', 'payment_link', 'created_at', 'customer_id',
 ];
 
-/**
- * `price`, `strength` and `drug_display_name` come from the drugs table —
- * `prescriptions` has no such columns.
- */
+// `price`, `strength` and `drug_display_name` come from the drugs table —
+// `prescriptions` has no such columns.
 const selectPrescription = (db, id) => db.prepare(`
   SELECT p.id, p.customer_name, p.customer_email, p.drug_name, p.dosage_instructions,
          p.status, p.payment_link, p.created_at, p.customer_id,

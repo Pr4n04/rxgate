@@ -1,11 +1,9 @@
 const Tesseract = require('tesseract.js');
 const path = require('path');
 
-/**
- * Perform OCR on a prescription image to extract text.
- * @param {string} imagePath - Absolute path to the uploaded image
- * @returns {Promise<string>} Extracted text
- */
+// Perform OCR on a prescription image to extract text.
+// @param {string} imagePath - Absolute path to the uploaded image
+// @returns {Promise<string>} Extracted text
 async function processPrescriptionOCR(imagePath) {
   try {
     // Tesseract.js downloads language data on first use. A 5MB eng.traineddata was
@@ -30,11 +28,9 @@ async function processPrescriptionOCR(imagePath) {
   }
 }
 
-/**
- * Extract potential drug names and key info from OCR text
- * @param {string} ocrText - Raw OCR output
- * @returns {object} Parsed information
- */
+// Extract potential drug names and key info from OCR text
+// @param {string} ocrText - Raw OCR output
+// @returns {object} Parsed information
 function parsePrescriptionInfo(ocrText) {
   if (!ocrText) return { drugNames: [], dosageInstructions: '' };
 

@@ -2,17 +2,13 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
 
-/**
- * Simulated Stripe Checkout.
- *
- * Reached only when the backend has no STRIPE_SECRET_KEY configured and is
- * therefore serving mock checkout sessions. It lets the whole
- * approve -> pay -> paid flow be demonstrated locally without Stripe test keys.
- *
- * The matching backend endpoint (POST /api/orders/mock-complete) returns 404 as
- * soon as real Stripe keys are present, so this page cannot simulate a payment in
- * a real deployment.
- */
+// Simulated Stripe Checkout.
+// Reached only when the backend has no STRIPE_SECRET_KEY configured and is
+// therefore serving mock checkout sessions. It lets the whole
+// approve -> pay -> paid flow be demonstrated locally without Stripe test keys.
+// The matching backend endpoint (POST /api/orders/mock-complete) returns 404 as
+// soon as real Stripe keys are present, so this page cannot simulate a payment in
+// a real deployment.
 export default function MockPaymentPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

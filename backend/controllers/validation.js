@@ -1,7 +1,5 @@
-/**
- * Controlled Drug (CD) Validation for UK/NI Veterinary Pharmacy
- * Implements checks required by the Misuse of Drugs Regulations (NI) 2002
- */
+// Controlled Drug (CD) Validation for UK/NI Veterinary Pharmacy
+// Implements checks required by the Misuse of Drugs Regulations (NI) 2002
 
 const CD_SCHEDULES = {
   'CD-SCH2': {
@@ -38,15 +36,13 @@ const CD_SCHEDULES = {
   },
 };
 
-/**
- * Validate a controlled drug prescription
- * @param {object} params
- * @param {string} params.cdSchedule - 'CD-SCH2' through 'CD-SCH5'
- * @param {string} params.prescriptionDate - Date the prescription was written (ISO string or null)
- * @param {string} params.vetRegNumber - Veterinary surgeon registration number
- * @param {number} [params.supplyDays] - Number of days supply being provided. If omitted, the supply-duration check is skipped and a warning is raised.
- * @returns {object} { valid: boolean, warnings: string[], errors: string[] }
- */
+// Validate a controlled drug prescription
+// @param {object} params
+// @param {string} params.cdSchedule - 'CD-SCH2' through 'CD-SCH5'
+// @param {string} params.prescriptionDate - Date the prescription was written (ISO string or null)
+// @param {string} params.vetRegNumber - Veterinary surgeon registration number
+// @param {number} [params.supplyDays] - Number of days supply being provided. If omitted, the supply-duration check is skipped and a warning is raised.
+// @returns {object} { valid: boolean, warnings: string[], errors: string[] }
 function validateControlledDrugPrescription({ cdSchedule, prescriptionDate, vetRegNumber, supplyDays }) {
   const errors = [];
   const warnings = [];
@@ -135,9 +131,7 @@ function validateControlledDrugPrescription({ cdSchedule, prescriptionDate, vetR
   };
 }
 
-/**
- * Get human-readable CD schedule info
- */
+// Get human-readable CD schedule info
 function getCdScheduleInfo(cdSchedule) {
   if (!cdSchedule || !CD_SCHEDULES[cdSchedule]) return null;
   const rules = CD_SCHEDULES[cdSchedule];

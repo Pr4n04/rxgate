@@ -135,20 +135,14 @@ It asserts, among other things:
 
 ## Security
 
-| Control | Implementation |
-|---|---|
-| Passwords | bcrypt, cost factor 12 |
-| Sessions | JWT (7-day expiry) + server-side revocation table checked on every request |
-| JWT secret | Required, minimum 32 characters, validated at boot; no source default |
-| Authorisation | Role gates per router (`admin`, `vet`, `customer`) plus per-record ownership checks |
-| Prescription PII | Full record only for staff or the owning customer; anonymous payment-link holders get a redacted projection |
-| Rate limiting | 10 requests / 15 min per IP+email on auth, 30/min on writes, 500/15 min overall |
-| Uploads | MIME allowlist, extension derived from the allowlist rather than the client filename, 10 MB cap, served with `nosniff` |
-| Security headers | Helmet with a tailored CSP |
-| Data minimisation | `rxgate.example` seeded addresses (RFC 2606), retention expiry set at write time |
+Passwords are hashed with bcrypt. Sessions are JWTs, but they're also kept in a
+`sessions` table so logging out actually works — you can't delete a JWT on its own,
+so there's a table of ones that have been logged out and every request checks it.
+Uploads are checked against a list of allowed image types and saved with a safe
+extension instead of the name the browser sent.
 
-Prescription images contain special-category health data, so `backend/uploads/`,
-`*.db`, and `.env` are all git-ignored and must never be committed.
+Prescription images are health data, so `backend/uploads/`, `*.db` and `.env` are
+all in `.gitignore` and shouldn't be committed.
 
 ## Usage Flow
 

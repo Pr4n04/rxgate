@@ -2,11 +2,9 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { getDb } = require('../db/schema');
 
-/**
- * The JWT secret is mandatory. Falling back to a literal baked into the source
- * would mean anyone with read access to the repository can forge an admin token,
- * so a missing value is a hard startup failure rather than a default.
- */
+// The JWT secret is mandatory. Falling back to a literal baked into the source
+// would mean anyone with read access to the repository can forge an admin token,
+// so a missing value is a hard startup failure rather than a default.
 function requireJwtSecret() {
   const secret = process.env.JWT_SECRET;
   if (!secret || secret.trim().length < 32) {
@@ -25,14 +23,11 @@ function readToken(req) {
   return authHeader.slice(7).trim() || null;
 }
 
-/**
- * Reject a token that has been explicitly revoked at logout.
- * Without this, `sessions.revoked` was written but never read, so "logout"
- * was client-side only and a stolen token stayed valid until natural expiry.
- *
- * Sessions are keyed by `sha256(rawToken)` — the same hash written at login and
- * updated at logout — so we hash the presented token to look the session up.
- */
+// Reject a token that has been explicitly revoked at logout.
+// Without this, `sessions.revoked` was written but never read, so "logout"
+// was client-side only and a stolen token stayed valid until natural expiry.
+// Sessions are keyed by `sha256(rawToken)` — the same hash written at login and
+// updated at logout — so we hash the presented token to look the session up.
 function isRevoked(rawToken) {
   const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
   let db;
@@ -68,7 +63,7 @@ function verify(req, secret) {
   return { payload };
 }
 
-/** Require a valid, unrevoked token. */
+// Require a valid, unrevoked token.
 function authenticateToken(req, res, next) {
   const result = verify(req, requireJwtSecret());
   if (result.error) {
@@ -78,11 +73,9 @@ function authenticateToken(req, res, next) {
   next();
 }
 
-/**
- * Attach req.user when a valid token is present, but never reject.
- * Used by routes that serve both authenticated staff and anonymous holders
- * of an emailed link, where access is scoped per-response instead.
- */
+// Attach req.user when a valid token is present, but never reject.
+// Used by routes that serve both authenticated staff and anonymous holders
+// of an emailed link, where access is scoped per-response instead.
 authenticateToken.optional = (req, res, next) => {
   try {
     const result = verify(req, requireJwtSecret());

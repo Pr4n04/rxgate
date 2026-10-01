@@ -54,17 +54,15 @@ function getStripe() {
   return stripe;
 }
 
-/**
- * Create a Stripe Checkout Session for a prescription payment
- * @param {object} params
- * @param {string} params.prescriptionId - Internal prescription ID
- * @param {string} params.customerEmail - Customer email
- * @param {string} params.drugName - Name of the drug
- * @param {number} params.amount - Amount in pence (e.g., 4500 = £45.00)
- * @param {string} params.successUrl - Redirect URL on success
- * @param {string} params.cancelUrl - Redirect URL on cancel
- * @returns {Promise<object>} Stripe session object
- */
+// Create a Stripe Checkout Session for a prescription payment
+// @param {object} params
+// @param {string} params.prescriptionId - Internal prescription ID
+// @param {string} params.customerEmail - Customer email
+// @param {string} params.drugName - Name of the drug
+// @param {number} params.amount - Amount in pence (e.g., 4500 = £45.00)
+// @param {string} params.successUrl - Redirect URL on success
+// @param {string} params.cancelUrl - Redirect URL on cancel
+// @returns {Promise<object>} Stripe session object
 async function createCheckoutSession({ prescriptionId, customerEmail, customerName, drugName, amount, successUrl, cancelUrl }) {
   const stripe = getStripe();
 
@@ -95,9 +93,7 @@ async function createCheckoutSession({ prescriptionId, customerEmail, customerNa
   return session;
 }
 
-/**
- * Retrieve checkout session details
- */
+// Retrieve checkout session details
 async function getSession(sessionId) {
   const stripe = getStripe();
   return await stripe.checkout.sessions.retrieve(sessionId, {
