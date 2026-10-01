@@ -5,7 +5,7 @@ const path = require('path');
 const helmet = require('helmet');
 const { initDatabase } = require('./db/schema');
 const { requireJwtSecret } = require('./middleware/auth');
-const { authLimiter, apiLimiter } = require('./middleware/rateLimit');
+const { authLimiter, writeLimiter, apiLimiter } = require('./middleware/rateLimit');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -76,6 +76,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
 // ====== RATE LIMITING ======
 // Stripe retries webhooks aggressively; never throttle them.
 app.use('/api', apiLimiter);
+// 30 writes/min per IP. Self-filtering to POST/PUT/PATCH/DELETE so a new route
+// cannot accidentally ship unlimited.
+app.use('/api', writeLimiter);
 
 // ====== API ROUTES ======
 // Credential endpoints get a much stricter budget than the general API ceiling.

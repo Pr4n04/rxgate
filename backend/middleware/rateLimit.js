@@ -36,13 +36,21 @@ const authLimiter = rateLimit({
   },
 });
 
-/** Writes that create work or spend money. */
+/**
+ * Writes that create work or spend money.
+ *
+ * Mounted app-wide under /api and filtered to mutating verbs, so it is easy to
+ * forget on a new route. Reads are already covered by apiLimiter.
+ */
 const writeLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 30,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   handler,
+  skip: (req) =>
+    !['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method) ||
+    req.path.startsWith('/orders/webhook'),
 });
 
 /** General API ceiling, so the app cannot be used to hammer the DB. */
